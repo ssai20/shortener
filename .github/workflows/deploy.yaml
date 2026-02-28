@@ -11,7 +11,7 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     env:
-      HOST: root@87.228.115.250
+      HOST: root@shortener-1987.onrender.com
       DEPLOY_DIRECTORY: /root/apps/url-shortener
       CONFIG_PATH: /root/apps/url-shortener/config/prod.yaml
       ENV_FILE_PATH: /root/apps/url-shortener/config.env
@@ -66,3 +66,17 @@ jobs:
       - name: Start application
         run: |
           ssh -i deploy_key.pem -o StrictHostKeyChecking=no ${{ env.HOST }} "systemctl daemon-reload && systemctl restart url-shortener.service"
+
+  deploy-to-render:
+    name: Trigger Render Deploy
+    runs-on: ubuntu-latest
+#    needs: deploy-to-server  # Ждем, пока сервер задеплоится (опционально)
+    if: always()  # Запускается даже если сервер упал
+    steps:
+      - name: Call Render Deploy Hook
+        env:
+          RENDER_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_URL }}
+          COMMIT_SHA: ${{ github.sha }}
+        run: |
+          echo "🚀 Triggering Render deploy for tag ${{ github.ref_name }}"
+          curl -X POST "$RENDER_HOOK&ref=$COMMIT_SHA"
