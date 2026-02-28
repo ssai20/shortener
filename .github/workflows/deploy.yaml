@@ -1,6 +1,9 @@
 name: Deploy App
 
 on:
+  push:
+    tags:
+      - 'v*'  # ← АВТОМАТИЧЕСКИ при пуше тэгов v0.0.5, v1.2.3 и т.д.
   workflow_dispatch:
     inputs:
       tag:
